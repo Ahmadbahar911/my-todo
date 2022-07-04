@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
-import 'package:todo_app/data/repositories/firestore_crud.dart';
+import 'package:finalproject_pmoif20c_alif/data/repositories/firestore_crud.dart';
 
 class TaskContainer extends StatelessWidget {
   final String id;
@@ -9,6 +9,7 @@ class TaskContainer extends StatelessWidget {
   final String starttime;
   final String endtime;
   final String note;
+  final String lokasi;
 
   const TaskContainer({
     Key? key,
@@ -18,6 +19,7 @@ class TaskContainer extends StatelessWidget {
     required this.starttime,
     required this.endtime,
     required this.note,
+    required this.lokasi,
   }) : super(key: key);
 
   @override

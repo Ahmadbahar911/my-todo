@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:todo_app/data/models/task_model.dart';
+import 'package:finalproject_pmoif20c_alif/data/models/task_model.dart';
 
 class FireStoreCrud {
   FireStoreCrud();
@@ -29,6 +29,7 @@ class FireStoreCrud {
       starttime,
       endtime,
       required int reminder,
+      lokasi,
       colorindex}) async {
     var taskcollection = _firestore.collection('tasks');
     await taskcollection.doc(docid).update({
@@ -38,6 +39,7 @@ class FireStoreCrud {
       'starttime': starttime,
       'endtime': endtime,
       'reminder': reminder,
+      'lokasi': lokasi,
       'colorindex': colorindex,
     });
   }

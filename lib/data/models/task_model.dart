@@ -6,6 +6,7 @@ class TaskModel {
   final String starttime;
   final String endtime;
   final int reminder;
+  final String lokasi;
   final int colorindex;
   TaskModel({
     required this.id,
@@ -15,6 +16,7 @@ class TaskModel {
     required this.starttime,
     required this.endtime,
     required this.reminder,
+    required this.lokasi,
     required this.colorindex,
   });
 
@@ -27,6 +29,7 @@ class TaskModel {
       starttime: json['starttime'],
       endtime: json['endtime'],
       reminder: json['reminder'],
+      lokasi: json['lokasi'],
       colorindex: json['colorindex'],
     );
   }
@@ -39,6 +42,7 @@ class TaskModel {
       'starttime': starttime,
       'endtime': endtime,
       'reminder': reminder,
+      'lokasi': lokasi,
       'colorindex': colorindex,
     };
   }

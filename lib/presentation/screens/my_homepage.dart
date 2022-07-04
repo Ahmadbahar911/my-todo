@@ -7,20 +7,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
-import 'package:todo_app/bloc/auth/authentication_cubit.dart';
-import 'package:todo_app/bloc/connectivity/connectivity_cubit.dart';
-import 'package:todo_app/data/models/task_model.dart';
-import 'package:todo_app/data/repositories/firestore_crud.dart';
-import 'package:todo_app/presentation/widgets/mybutton.dart';
-import 'package:todo_app/presentation/widgets/myindicator.dart';
-import 'package:todo_app/presentation/widgets/mysnackbar.dart';
-import 'package:todo_app/presentation/widgets/mytextfield.dart';
-import 'package:todo_app/presentation/widgets/task_container.dart';
-import 'package:todo_app/shared/constants/assets_path.dart';
-import 'package:todo_app/shared/constants/consts_variables.dart';
-import 'package:todo_app/shared/constants/strings.dart';
-import 'package:todo_app/shared/services/notification_service.dart';
-import 'package:todo_app/shared/styles/colors.dart';
+import 'package:finalproject_pmoif20c_alif/bloc/auth/authentication_cubit.dart';
+import 'package:finalproject_pmoif20c_alif/bloc/connectivity/connectivity_cubit.dart';
+import 'package:finalproject_pmoif20c_alif/data/models/task_model.dart';
+import 'package:finalproject_pmoif20c_alif/data/repositories/firestore_crud.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/mybutton.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/myindicator.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/mysnackbar.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/mytextfield.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/task_container.dart';
+import 'package:finalproject_pmoif20c_alif/shared/constants/assets_path.dart';
+import 'package:finalproject_pmoif20c_alif/shared/constants/consts_variables.dart';
+import 'package:finalproject_pmoif20c_alif/shared/constants/strings.dart';
+import 'package:finalproject_pmoif20c_alif/shared/services/notification_service.dart';
+import 'package:finalproject_pmoif20c_alif/shared/styles/colors.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/screens/addtask_screen.dart';
+import 'package:finalproject_pmoif20c_alif/services/shared_service.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -32,8 +34,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   static var currentdate = DateTime.now();
 
-  final TextEditingController _usercontroller = TextEditingController(
-      text: FirebaseAuth.instance.currentUser!.displayName);
+  //final TextEditingController _usercontroller = TextEditingController(
+    //  text: FirebaseAuth.instance.currentUser!.displayName);
 
   @override
   void initState() {
@@ -46,17 +48,18 @@ class _MyHomePageState extends State<MyHomePage> {
   void dispose() {
     super.dispose();
 
-    _usercontroller.dispose();
+   // _usercontroller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     AuthenticationCubit authenticationCubit = BlocProvider.of(context);
     ConnectivityCubit connectivitycubit = BlocProvider.of(context);
-    final user = FirebaseAuth.instance.currentUser;
-    String username = user!.isAnonymous ? 'Anonymous' : 'User';
+    //final user = FirebaseAuth.instance.currentUser;
+    //String username = user!.isAnonymous ? 'Anonymous' : 'User';
 
     return Scaffold(
+      //resizeToAvoidBottomInset: false,
         body: MultiBlocListener(
             listeners: [
           BlocListener<ConnectivityCubit, ConnectivityState>(
@@ -97,43 +100,28 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       Row(
                         children: [
-                          InkWell(
-                            onTap: () {
-                              // NotificationsHandler.createNotification();
-                            },
-                            child: SizedBox(
-                              height: 8.h,
-                              child: Image.asset(
-                                profileimages[profileimagesindex],
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
                           SizedBox(
                             width: 3.w,
                           ),
-                          Expanded(
-                            child: Text(
-                              user.displayName != null
-                                  ? 'Hello ${user.displayName}'
-                                  : ' Hello $username',
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline1!
-                                  .copyWith(fontSize: 15.sp),
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              _showBottomSheet(context, authenticationCubit);
-                            },
-                            child: Icon(
-                              Icons.settings,
-                              size: 25.sp,
-                              color: Appcolors.black,
-                            ),
-                          )
+                         
+                         Expanded(
+                           child: Row(
+                             children: [
+                               InkWell(
+                                  onTap: () {
+                                    _showBottomSheet(context, authenticationCubit);
+                                  },
+                                  child: Icon(
+                                    Icons.menu_sharp,
+                                    size: 25.sp,
+                                    color: Appcolors.black,
+                                  ),
+                                ),
+                             ],
+                           ),
+                            )
+                           
+                          
                         ],
                       ),
                       SizedBox(
@@ -151,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           const Spacer(),
                           MyButton(
-                            color: Colors.deepPurple,
+                            color: Colors.red,
                             width: 40.w,
                             title: '+ Add Task',
                             func: () {
@@ -160,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 addtaskpage,
                               );
                             },
-                          )
+                          ),
                         ],
                       ),
                       SizedBox(
@@ -186,36 +174,39 @@ class _MyHomePageState extends State<MyHomePage> {
                           }
 
                           return snapshot.data!.isNotEmpty
-                              ? ListView.builder(
-                                  physics: const BouncingScrollPhysics(),
-                                  itemCount: snapshot.data!.length,
-                                  itemBuilder: (context, index) {
-                                    var task = snapshot.data![index];
-                                    Widget _taskcontainer = TaskContainer(
-                                      id: task.id,
-                                      color: colors[task.colorindex],
-                                      title: task.title,
-                                      starttime: task.starttime,
-                                      endtime: task.endtime,
-                                      note: task.note,
-                                    );
-                                    return InkWell(
-                                        onTap: () {
-                                          Navigator.pushNamed(
-                                              context, addtaskpage,
-                                              arguments: task);
-                                        },
-                                        child: index % 2 == 0
-                                            ? BounceInLeft(
-                                                duration: const Duration(
-                                                    milliseconds: 1000),
-                                                child: _taskcontainer)
-                                            : BounceInRight(
-                                                duration: const Duration(
-                                                    milliseconds: 1000),
-                                                child: _taskcontainer));
-                                  },
-                                )
+                              ? Expanded(
+                                child: ListView.builder(
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount: snapshot.data!.length,
+                                    itemBuilder: (context, index) {
+                                      var task = snapshot.data![index];
+                                      Widget _taskcontainer = TaskContainer(
+                                        id: task.id,
+                                        color: colors[task.colorindex],
+                                        title: task.title,
+                                        starttime: task.starttime,
+                                        endtime: task.endtime,
+                                        note: task.note,
+                                        lokasi: task.lokasi,
+                                      );
+                                      return InkWell(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context, addtaskpage,
+                                                arguments: task);
+                                          },
+                                          child: index % 2 == 0
+                                              ? BounceInLeft(
+                                                  duration: const Duration(
+                                                      milliseconds: 1000),
+                                                  child: _taskcontainer)
+                                              : BounceInRight(
+                                                  duration: const Duration(
+                                                      milliseconds: 1000),
+                                                  child: _taskcontainer));
+                                    },
+                                  ),
+                              )
                               : _nodatawidget();
                         },
                       )),
@@ -228,7 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<dynamic> _showBottomSheet(
       BuildContext context, AuthenticationCubit authenticationCubit) {
-    var user = FirebaseAuth.instance.currentUser!.isAnonymous;
+    //var user = FirebaseAuth.instance.currentUser!.isAnonymous;
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -249,9 +240,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    (user)
-                        ? Container()
-                        : Wrap(
+                    //(user)
+                    //    ? Container()
+                        Wrap(
                             children: List<Widget>.generate(
                               4,
                               (index) => Padding(
@@ -276,7 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       child: profileimagesindex == index
                                           ? Icon(
                                               Icons.done,
-                                              color: Colors.deepPurple,
+                                              color: Colors.red,
                                               size: 8.h,
                                             )
                                           : null),
@@ -287,43 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     SizedBox(
                       height: 3.h,
                     ),
-                    (user)
-                        ? Container()
-                        : MyTextfield(
-                            hint: '',
-                            icon: Icons.person,
-                            validator: (value) {},
-                            textEditingController: _usercontroller),
-                    SizedBox(
-                      height: 3.h,
-                    ),
-                    (user)
-                        ? Container()
-                        : BlocBuilder<AuthenticationCubit, AuthenticationState>(
-                            builder: (context, state) {
-                              if (state is UpdateProfileLoadingState) {
-                                return const MyCircularIndicator();
-                              }
-
-                              return MyButton(
-                                color: Colors.green,
-                                width: 80.w,
-                                title: "Update Profile",
-                                func: () {
-                                  if (_usercontroller.text == '') {
-                                    MySnackBar.error(
-                                        message: 'Name shoud not be empty!!',
-                                        color: Colors.red,
-                                        context: context);
-                                  } else {
-                                    authenticationCubit.updateUserInfo(
-                                        _usercontroller.text, context);
-                                    setState(() {});
-                                  }
-                                },
-                              );
-                            },
-                          ),
+                   
                     SizedBox(
                       height: 3.h,
                     ),
@@ -332,7 +287,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       width: 80.w,
                       title: "Log Out",
                       func: () {
-                        authenticationCubit.signout();
+                        //authenticationCubit.signout();
+                        SharedService.logout(context);
                       },
                     ),
                     SizedBox(
@@ -359,23 +315,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _nodatawidget() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.asset(
-            MyAssets.clipboard,
-            height: 30.h,
-          ),
-          SizedBox(height: 3.h),
-          Text(
-            'There Is No Tasks',
-            style: Theme.of(context)
-                .textTheme
-                .headline1!
-                .copyWith(fontSize: 16.sp),
-          ),
-        ],
+      child: Expanded(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(
+              MyAssets.clipboard,
+              height: 30.h,
+            ),
+            SizedBox(height: 3.h),
+            Text(
+              'There Is No Tasks',
+              style: Theme.of(context)
+                  .textTheme
+                  .headline1!
+                  .copyWith(fontSize: 16.sp),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -398,7 +356,7 @@ class _MyHomePageState extends State<MyHomePage> {
             .textTheme
             .subtitle1!
             .copyWith(fontSize: 10.sp, color: Appcolors.black),
-        selectionColor: Colors.deepPurple,
+        selectionColor: Colors.red,
         onDateChange: (DateTime newdate) {
           setState(() {
             currentdate = newdate;

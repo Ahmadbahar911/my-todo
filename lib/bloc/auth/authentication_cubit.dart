@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'package:todo_app/data/repositories/firebase_auth.dart';
-import 'package:todo_app/presentation/widgets/mysnackbar.dart';
+import 'package:finalproject_pmoif20c_alif/data/repositories/firebase_auth.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/mysnackbar.dart';
 
 part 'authentication_state.dart';
 

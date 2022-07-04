@@ -1,15 +1,21 @@
+import 'dart:io';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:day_night_time_picker/day_night_time_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer/sizer.dart';
-import 'package:todo_app/data/models/task_model.dart';
-import 'package:todo_app/data/repositories/firestore_crud.dart';
-import 'package:todo_app/presentation/widgets/mybutton.dart';
-import 'package:todo_app/presentation/widgets/mytextfield.dart';
-import 'package:todo_app/shared/constants/consts_variables.dart';
-import 'package:todo_app/shared/styles/colors.dart';
-
+import 'package:finalproject_pmoif20c_alif/data/models/task_model.dart';
+import 'package:finalproject_pmoif20c_alif/data/repositories/firestore_crud.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/mybutton.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/mytextfield.dart';
+import 'package:finalproject_pmoif20c_alif/shared/constants/consts_variables.dart';
+import 'package:finalproject_pmoif20c_alif/shared/styles/colors.dart';
+import 'package:finalproject_pmoif20c_alif/data/repositories/firebase_api.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/button_widget.dart';
+import 'package:path/path.dart' as path;
 import '../../shared/services/notification_service.dart';
 
 class AddTaskScreen extends StatefulWidget {
@@ -26,9 +32,12 @@ class AddTaskScreen extends StatefulWidget {
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
   get isEditMote => widget.task != null;
+  UploadTask? task;
+  File? file;
 
   late TextEditingController _titlecontroller;
   late TextEditingController _notecontroller;
+  late TextEditingController _lokasicontroller;
   late DateTime currentdate;
   static var _starthour = TimeOfDay.now();
 
@@ -68,6 +77,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         TextEditingController(text: isEditMote ? widget.task!.title : '');
     _notecontroller =
         TextEditingController(text: isEditMote ? widget.task!.note : '');
+    _lokasicontroller =
+        TextEditingController(text: isEditMote ? widget.task!.lokasi : '');
 
     currentdate =
         isEditMote ? DateTime.parse(widget.task!.date) : DateTime.now();
@@ -84,6 +95,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     super.dispose();
     _titlecontroller.dispose();
     _notecontroller.dispose();
+    _lokasicontroller.dispose();
   }
 
   @override
@@ -102,6 +114,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   }
 
   Form _buildform(BuildContext context) {
+    final fileName = file != null ? path.basename(file!.path) : 'No File Selected';
     return Form(
       key: _formKey,
       child: Column(
@@ -115,7 +128,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             height: 3.h,
           ),
           Text(
-            'Title',
+            'Nama Acara',
             style: Theme.of(context)
                 .textTheme
                 .headline1!
@@ -125,11 +138,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             height: 1.h,
           ),
           MyTextfield(
-            hint: 'Enter Title',
+            hint: 'Masukan Nama Acara',
             icon: Icons.title,
             showicon: false,
             validator: (value) {
-              return value!.isEmpty ? "Please Enter A Title" : null;
+              return value!.isEmpty ? "Nama Acara Harus diisi" : null;
             },
             textEditingController: _titlecontroller,
           ),
@@ -137,7 +150,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             height: 2.h,
           ),
           Text(
-            'Note',
+            'Deskripsi',
             style: Theme.of(context)
                 .textTheme
                 .headline1!
@@ -147,17 +160,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             height: 1.h,
           ),
           MyTextfield(
-            hint: 'Enter Note',
+            hint: 'Deskripsi',
             icon: Icons.ac_unit,
             showicon: false,
             maxlenght: 40,
             validator: (value) {
-              return value!.isEmpty ? "Please Enter A Note" : null;
+              return value!.isEmpty ? "Masukan Deskripsi" : null;
             },
             textEditingController: _notecontroller,
           ),
           Text(
-            'Date',
+            'Tanggal',
             style: Theme.of(context)
                 .textTheme
                 .headline1!
@@ -259,7 +272,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                               value: endhour,
                               is24HrFormat: true,
                               minHour: _starthour.hour.toDouble() - 1,
-                              accentColor: Colors.deepPurple,
+                              accentColor: Colors.red,
                               onChange: (TimeOfDay newvalue) {
                                 setState(() {
                                   endhour = newvalue;
@@ -290,6 +303,54 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           _buildDropdownButton(context),
           SizedBox(
             height: 2.h,
+          ),
+          Text(
+            'Lokasi',
+            style: Theme.of(context)
+                .textTheme
+                .headline1!
+                .copyWith(fontSize: 14.sp),
+          ),
+          SizedBox(
+            height: 1.h,
+          ),
+          MyTextfield(
+            hint: 'Lokasi',
+            icon: Icons.ac_unit,
+            showicon: false,
+            //maxlenght: 40,
+            validator: (value) {
+              return value!.isEmpty ? "Masukan Lokasi" : null;
+            },
+            textEditingController: _lokasicontroller,
+          ),
+           SizedBox(
+            height: 2.h,
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ButtonWidget(
+                  text: 'Select File',
+                  icon: Icons.attach_file,
+                  onClicked: selectFile,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  fileName,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 48),
+                ButtonWidget(
+                  text: 'Upload File',
+                  icon: Icons.cloud_upload_outlined,
+                  onClicked: uploadFile,
+                ),
+                SizedBox(height: 20),
+                task != null ? buildUploadStatus(task!) : Container(),
+              ],
+            ),
           ),
           Text(
             'Colors',
@@ -327,9 +388,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         )),
               ),
               MyButton(
-                color: isEditMote ? Colors.green : Colors.deepPurple,
+                color: isEditMote ? Colors.green : Colors.redAccent,
                 width: 40.w,
-                title: isEditMote ? "Update Task" : 'Create Task',
+                title: isEditMote ? "Update" : 'Simpan',
                 func: () {
                   _addtask();
                 },
@@ -350,6 +411,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         starttime: _starthour.format(context),
         endtime: endhour.format(context),
         reminder: _selectedReminder,
+        lokasi: _lokasicontroller.text,
         colorindex: _selectedcolor,
         id: '',
       );
@@ -362,6 +424,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               starttime: _starthour,
               endtime: endhour.format(context),
               reminder: _selectedReminder,
+              lokasi: _lokasicontroller.text,
               colorindex: _selectedcolor,
             )
           : FireStoreCrud().addTask(task: task);
@@ -393,10 +456,10 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       style: Theme.of(context)
           .textTheme
           .headline1!
-          .copyWith(fontSize: 9.sp, color: Colors.deepPurple),
+          .copyWith(fontSize: 9.sp, color: Colors.red),
       icon: Icon(
         Icons.arrow_drop_down,
-        color: Colors.deepPurple,
+        color: Colors.red,
         size: 25.sp,
       ),
       decoration: InputDecoration(
@@ -445,11 +508,55 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           ),
         ),
         Text(
-          isEditMote ? 'Update Task' : 'Add Task',
+          isEditMote ? 'Update' : 'Simpan',
           style: Theme.of(context).textTheme.headline1,
         ),
         const SizedBox()
       ],
     );
   }
+
+  Future selectFile() async {
+    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+
+    if (result == null) return;
+    final path = result.files.single.path!;
+
+    setState(() => file = File(path));
+  }
+
+  Future uploadFile() async {
+    if (file == null) return;
+
+    final fileName = path.basename(file!.path);
+    final destination = 'files/$fileName';
+
+    task = FirebaseApi.uploadFile(destination, file!);
+    setState(() {});
+
+    if (task == null) return;
+
+    final snapshot = await task!.whenComplete(() {});
+    final urlDownload = await snapshot.ref.getDownloadURL();
+
+    print('Download-Link: $urlDownload');
+  }
+
+  Widget buildUploadStatus(UploadTask task) => StreamBuilder<TaskSnapshot>(
+        stream: task.snapshotEvents,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final snap = snapshot.data!;
+            final progress = snap.bytesTransferred / snap.totalBytes;
+            final percentage = (progress * 100).toStringAsFixed(2);
+
+            return Text(
+              '$percentage %',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            );
+          } else {
+            return Container();
+          }
+        },
+      );
 }

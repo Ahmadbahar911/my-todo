@@ -1,297 +1,316 @@
-import 'package:animate_do/animate_do.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sizer/sizer.dart';
-import 'package:todo_app/bloc/auth/authentication_cubit.dart';
-import 'package:todo_app/bloc/connectivity/connectivity_cubit.dart';
-import 'package:todo_app/presentation/widgets/mybutton.dart';
-import 'package:todo_app/presentation/widgets/myindicator.dart';
-import 'package:todo_app/presentation/widgets/mysnackbar.dart';
-import 'package:todo_app/presentation/widgets/mytextfield.dart';
-import 'package:todo_app/shared/constants/assets_path.dart';
-import 'package:todo_app/shared/constants/strings.dart';
-import 'package:todo_app/shared/styles/colors.dart';
-import 'package:todo_app/shared/validators.dart';
+import 'package:snippet_coder_utils/FormHelper.dart';
+import 'package:snippet_coder_utils/ProgressHUD.dart';
+import 'package:snippet_coder_utils/hex_color.dart';
+import 'package:finalproject_pmoif20c_alif/config.dart';
+import 'package:finalproject_pmoif20c_alif/models/login_request_model.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/screens/my_homepage.dart';
+import 'package:finalproject_pmoif20c_alif/services/api_service.dart';
+import 'package:finalproject_pmoif20c_alif/shared/constants/strings.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late TextEditingController _emailcontroller;
-  late TextEditingController _passwordcontroller;
-  final _formKey = GlobalKey<FormState>();
+  bool isApiCallProcess = false;
+  bool hidePassword = true;
+  GlobalKey<FormState> globalFormKey = GlobalKey<FormState>();
+  String? userName;
+  String? password;
 
   @override
   void initState() {
     super.initState();
-    _emailcontroller = TextEditingController();
-    _passwordcontroller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    _emailcontroller.dispose();
-    _passwordcontroller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    AuthenticationCubit authcubit = BlocProvider.of(context);
-    ConnectivityCubit connectivitycubit = BlocProvider.of(context);
-    return Scaffold(
-      backgroundColor: Appcolors.white,
-      appBar: AppBar(
-        backgroundColor: Appcolors.white,
-        elevation: 0,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(
-            Icons.arrow_back,
-            color: Appcolors.black,
-            size: 30,
+    return SafeArea(
+      child: Scaffold(
+        //backgroundColor: HexColor("#283B71"),
+        backgroundColor: HexColor("#d1160d"),
+        body: ProgressHUD(
+          child: Form(
+            key: globalFormKey,
+            child: _loginUI(context),
           ),
+          inAsyncCall: isApiCallProcess,
+          opacity: 0.3,
+          key: UniqueKey(),
         ),
       ),
-      body: BlocConsumer<AuthenticationCubit, AuthenticationState>(
-        listener: (context, state) {
-          if (state is AuthenticationErrortate) {
-            // Showing the error message if the user has entered invalid credentials
-            MySnackBar.error(
-                message: state.error.toString(),
-                color: Colors.red,
-                context: context);
-          }
-        },
-        builder: (context, state) {
-          if (state is AuthenticationLoadingState) {
-            return const MyCircularIndicator();
-          }
-          if (state is! AuthenticationSuccessState) {
-            return SafeArea(
-                child: SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
-                child: Form(
-                  key: _formKey,
-                  child: BounceInDown(
-                    duration: const Duration(milliseconds: 1500),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Welcome !',
-                          style:
-                              Theme.of(context).textTheme.headline1?.copyWith(
-                                    fontSize: 20.sp,
-                                    letterSpacing: 2,
-                                  ),
-                        ),
-                        SizedBox(
-                          height: 1.5.h,
-                        ),
-                        Text(
-                          'Sign In To Continue !',
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1
-                              ?.copyWith(
-                                  fontSize: 12.sp,
-                                  letterSpacing: 2,
-                                  fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(
-                          height: 10.h,
-                        ),
-                        MyTextfield(
-                          hint: 'Email Address',
-                          icon: Icons.email,
-                          keyboardtype: TextInputType.emailAddress,
-                          validator: (value) {
-                            return !Validators.isValidEmail(value!)
-                                ? 'Enter a valid email'
-                                : null;
-                          },
-                          textEditingController: _emailcontroller,
-                        ),
-                        SizedBox(
-                          height: 4.h,
-                        ),
-                        MyTextfield(
-                          hint: 'Password',
-                          icon: Icons.password,
-                          keyboardtype: TextInputType.text,
-                          obscure: true,
-                          validator: (value) {
-                            return value!.length < 6
-                                ? "Enter min. 6 characters"
-                                : null;
-                          },
-                          textEditingController: _passwordcontroller,
-                        ),
-                        SizedBox(
-                          height: 4.h,
-                        ),
-                        MyButton(
-                          color: Colors.deepPurple,
-                          width: 80.w,
-                          title: 'Login',
-                          func: () {
-                            if (connectivitycubit.state
-                                is ConnectivityOnlineState) {
-                              _authenticatewithemailandpass(context, authcubit);
-                            } else {
-                              MySnackBar.error(
-                                  message:
-                                      'Please Check Your Internet Conection',
-                                  color: Colors.red,
-                                  context: context);
-                            }
-                          },
-                        ),
-                        SizedBox(
-                          height: 2.h,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Don\'t have an Account ?',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .subtitle1
-                                  ?.copyWith(
-                                      fontSize: 8.sp,
-                                      fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(context, signuppage);
-                              },
-                              child: Text(
-                                'Sign Up',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headline1
-                                    ?.copyWith(
-                                      fontSize: 9.sp,
-                                      color: Colors.deepPurple,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 8.h,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _myDivider(),
-                            const SizedBox(
-                              width: 15,
-                            ),
-                            Text(
-                              'Or',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline1
-                                  ?.copyWith(
-                                    fontSize: 9.sp,
-                                    color: Colors.deepPurple,
-                                  ),
-                            ),
-                            const SizedBox(
-                              width: 15,
-                            ),
-                            _myDivider(),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 4.h,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                if (connectivitycubit.state
-                                    is ConnectivityOnlineState) {
-                                  authcubit.googleSignIn();
-                                } else {
-                                  MySnackBar.error(
-                                      message:
-                                          'Please Check Your Internet Conection',
-                                      color: Colors.red,
-                                      context: context);
-                                }
-                              },
-                              child: Image.asset(
-                                MyAssets.googleicon,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 40,
-                            ),
-                            InkWell(
-                              onTap: () {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content: Text(
-                                    'It will be added soon !!',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headline1
-                                        ?.copyWith(
-                                            fontSize: 11.sp,
-                                            color: Appcolors.white),
-                                  ),
-                                  backgroundColor: Colors.deepPurple,
-                                ));
-                              },
-                              child: Image.asset(
-                                MyAssets.facebookicon,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+    );
+  }
+
+  Widget _loginUI(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height / 5.2,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white,
+                  Colors.white,
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                //topLeft: Radius.circular(100),
+                //topRight: Radius.circular(150),
+                bottomRight: Radius.circular(100),
+                bottomLeft: Radius.circular(100),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Center(
+                    child: Text(
+                      "Mau Apa",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 40,
+                        color: HexColor("#d1160d"),
+                      ),
                     ),
                   ),
                 ),
+                //Align(
+                // alignment: Alignment.center,
+                // child: Image.asset(
+                //   "assets/images/ShoppingAppLogo.png",
+                //   fit: BoxFit.contain,
+                //    width: 250,
+                //),
+                //),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(left: 20, bottom: 30, top: 50),
+            child: Text(
+              "Login",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 25,
+                color: Colors.white,
               ),
-            ));
-          }
-          return Container();
-        },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: FormHelper.inputFieldWidget(
+              context,
+              //const Icon(Icons.person),
+              "Username",
+              "Username",
+              (onValidateVal) {
+                if (onValidateVal.isEmpty) {
+                  return 'Username can\'t be empty.';
+                }
+
+                return null;
+              },
+              (onSavedVal) => {
+                userName = onSavedVal,
+              },
+              initialValue: "",
+              obscureText: false,
+              borderFocusColor: Colors.white,
+              prefixIconColor: Colors.white,
+              borderColor: Colors.white,
+              textColor: Colors.white,
+              hintColor: Colors.white.withOpacity(0.7),
+              borderRadius: 10,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: FormHelper.inputFieldWidget(
+              context,
+              //const Icon(Icons.lock),
+              "Password",
+              "Password",
+              (onValidateVal) {
+                if (onValidateVal.isEmpty) {
+                  return 'Password can\'t be empty.';
+                }
+
+                return null;
+              },
+              (onSavedVal) => {
+                password = onSavedVal,
+              },
+              initialValue: "",
+              obscureText: hidePassword,
+              borderFocusColor: Colors.white,
+              prefixIconColor: Colors.white,
+              borderColor: Colors.white,
+              textColor: Colors.white,
+              hintColor: Colors.white.withOpacity(0.7),
+              borderRadius: 10,
+              suffixIcon: IconButton(
+                onPressed: () {
+                  setState(() {
+                    hidePassword = !hidePassword;
+                  });
+                },
+                color: Colors.white.withOpacity(0.7),
+                icon: Icon(
+                  hidePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                right: 25,
+              ),
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(color: Colors.grey, fontSize: 14.0),
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: 'Forget Password ?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()..onTap = () {},
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Center(
+            child: FormHelper.submitButton(
+              "Login",
+              () {
+                if (validateAndSave()) {
+                  setState(() {
+                    isApiCallProcess = true;
+                  });
+
+                  LoginRequestModel model = LoginRequestModel(
+                    username: userName,
+                    password: password,
+                  );
+
+                  APIService.login(model).then(
+                    (response) {
+                      setState(() {
+                        isApiCallProcess = false;
+                      });
+
+                      if (response) {
+                         Navigator.pushNamed(context, '/home');
+                        //Navigator.pushNamedAndRemoveUntil(
+                        //context,
+                        //'///my_homepage',
+                        //(route) => false,
+                        //);
+                      } else {
+                        FormHelper.showSimpleAlertDialog(
+                          context,
+                          Config.appName,
+                          "Invalid Username/Password !!",
+                          "OK",
+                          () {
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      }
+                    },
+                  );
+                }
+              },
+              btnColor: HexColor("#d1160d"),
+              borderColor: Colors.white,
+              txtColor: Colors.white,
+              borderRadius: 10,
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          const Center(
+            child: Text(
+              "OR",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                right: 25,
+              ),
+              child: RichText(
+                text: TextSpan(
+                  style: const TextStyle(color: Colors.white, fontSize: 14.0),
+                  children: <TextSpan>[
+                    const TextSpan(
+                      text: 'Dont have an account? ',
+                    ),
+                    TextSpan(
+                      text: 'Sign up',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          Navigator.pushNamed(
+                            context,
+                            '/signup_page',
+                          );
+                        },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+        ],
       ),
     );
   }
 
-  Container _myDivider() {
-    return Container(
-      width: 27.w,
-      height: 0.2.h,
-      color: Appcolors.black,
-    );
-  }
-
-  void _authenticatewithemailandpass(context, AuthenticationCubit cubit) {
-    if (_formKey.currentState!.validate()) {
-      cubit.login(
-          email: _emailcontroller.text, password: _passwordcontroller.text);
+  bool validateAndSave() {
+    final form = globalFormKey.currentState;
+    if (form!.validate()) {
+      form.save();
+      return true;
     }
+    return false;
   }
 }

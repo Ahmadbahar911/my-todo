@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:todo_app/data/repositories/user_repository.dart';
+import 'package:finalproject_pmoif20c_alif/data/repositories/user_repository.dart';
 
 class FirebaseAuthRepo implements UserRepository {
   final _firebaseAuth = FirebaseAuth.instance;

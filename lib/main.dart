@@ -8,18 +8,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
-import 'package:todo_app/bloc/connectivity/connectivity_cubit.dart';
-import 'package:todo_app/bloc/onboarding/onboarding_cubit.dart';
-import 'package:todo_app/presentation/screens/my_homepage.dart';
-import 'package:todo_app/presentation/screens/onboarding.dart';
-import 'package:todo_app/presentation/screens/welcome_page.dart';
-import 'package:todo_app/presentation/widgets/myindicator.dart';
-import 'package:todo_app/shared/constants/consts_variables.dart';
-import 'package:todo_app/shared/route.dart';
-import 'package:todo_app/shared/styles/themes.dart';
+import 'package:finalproject_pmoif20c_alif/bloc/connectivity/connectivity_cubit.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/screens/my_homepage.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/screens/signup_page.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/screens/login_page.dart';
+import 'package:finalproject_pmoif20c_alif/presentation/widgets/myindicator.dart';
+import 'package:finalproject_pmoif20c_alif/shared/constants/consts_variables.dart';
+import 'package:finalproject_pmoif20c_alif/shared/route.dart';
+import 'package:finalproject_pmoif20c_alif/shared/styles/themes.dart';
 
 import 'bloc/auth/authentication_cubit.dart';
 
+Widget _defaultHome = const LoginPage();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -68,9 +68,7 @@ class MyApp extends StatelessWidget {
                 lazy: false,
                 create: (context) =>
                     ConnectivityCubit()..initializeConnectivity()),
-            BlocProvider(
-              create: (context) => OnboardingCubit(),
-            ),
+           
             BlocProvider(create: (context) => AuthenticationCubit()),
           ],
           child: MaterialApp(
@@ -80,21 +78,27 @@ class MyApp extends StatelessWidget {
             theme: MyTheme.lightTheme,
             darkTheme: MyTheme.darkTheme,
             onGenerateRoute: approute.generateRoute,
-            home: StreamBuilder<User?>(
-              stream: FirebaseAuth.instance.authStateChanges(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const MyCircularIndicator();
-                }
-                if (snapshot.hasData) {
-                  return const MyHomePage();
-                }
-                if (seen != null) {
-                  return const WelcomePage();
-                }
-                return const OnboardingPage();
+            //home: StreamBuilder<User?>(
+             // stream: FirebaseAuth.instance.authStateChanges(),
+              //builder: (context, snapshot) {
+             //   if (snapshot.connectionState == ConnectionState.waiting) {
+              //    return const MyCircularIndicator();
+               // }
+               // if (snapshot.hasData) {
+               //   return const MyHomePage();
+               // }
+               // if (seen != null) {
+               //   return const WelcomePage();
+               // }
+               // return const OnboardingPage();
+              //},
+             routes: {
+              '/': (context) => _defaultHome,
+              '/home': (context) =>  const MyHomePage(),
+              '/login': (context) => const LoginPage(),
+              '/register': (context) => const RegisterPage(),
               },
-            ),
+            //),
           ),
         );
       },

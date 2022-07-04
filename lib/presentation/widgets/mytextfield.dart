@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
-import 'package:todo_app/shared/styles/colors.dart';
+import 'package:finalproject_pmoif20c_alif/shared/styles/colors.dart';
 
 class MyTextfield extends StatelessWidget {
   final IconData icon;
@@ -56,20 +56,20 @@ class MyTextfield extends StatelessWidget {
               EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.3.h),
           hintStyle: Theme.of(context).textTheme.headline1?.copyWith(
                 fontSize: 9.sp,
-                color: Colors.deepPurple,
+                color: Colors.red,
               ),
           prefixIcon: showicon
               ? Icon(
                   icon,
                   size: 22,
-                  color: Colors.deepPurple,
+                  color: Colors.red,
                 )
               : null,
           suffixIcon: readonly
               ? Icon(
                   icon,
                   size: 22,
-                  color: Colors.deepPurple,
+                  color: Colors.red,
                 )
               : null),
       autovalidateMode: AutovalidateMode.onUserInteraction,
